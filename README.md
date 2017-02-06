@@ -64,5 +64,5 @@ python manage.py scrap --service (viadeo|linkedin) <http://profile_link_entry_po
 
 # Examples :
 python manage.py scrap --service linkedin https://fr.linkedin.com/in/yannis-tannier-7017a169
-python manage.py scrap --service linkedin http://fr.viadeo.com/fr/profile/yannis.tannier
+python manage.py scrap --service viadeo http://fr.viadeo.com/fr/profile/yannis.tannier
 ```
