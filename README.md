@@ -9,13 +9,12 @@ sudo apt-get install tor
 ```
 
 Create password 
-/etc/tor/torrc
 ```
 tor --hash-password mypassword
 ```
 
 So, update the torrc with the port and the hashed password.
-
+/etc/tor/torrc
 ```
 ControlPort 9051
 # hashed password below is obtained via `tor --hash-password my_password`
