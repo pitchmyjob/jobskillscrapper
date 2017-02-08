@@ -25,7 +25,7 @@ SECRET_KEY = '$b0pvb^ag1ht!ziz79%9qvqf7l!&hh-^c%2cpw@&$1rj0c@bzo'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -76,8 +76,11 @@ WSGI_APPLICATION = 'wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'HOST': "scrap-jobskill.cw2dxsgsldpl.eu-west-1.rds.amazonaws.com",
+        'NAME': "scrapjobskill",
+        'USER': "scrap",
+        'PASSWORD': "fd1g56fdg8",
     }
 }
 

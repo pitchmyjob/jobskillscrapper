@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from ._scrapper import LinkedInJobSkillScrapper, ViadeoJobSkillScrapper
+from ._scrapper import ScrapperHandler
 
 
 class Command(BaseCommand):
@@ -14,12 +14,8 @@ class Command(BaseCommand):
         self.stdout.write('# Starting scrapper')
 
         service = options.get('service')
-        link = options.get('link')
+        link = options.get('link') if options.get('link') else None
 
-        if service and link:
-            if service == 'linkedin':
-                LinkedInJobSkillScrapper(link)
-            elif service == 'viadeo':
-                ViadeoJobSkillScrapper(link)
+        ScrapperHandler(service=service, url=link)
 
         self.stdout.write('\n# Ending scrapper')
