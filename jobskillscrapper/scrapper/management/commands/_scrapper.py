@@ -7,33 +7,21 @@ from scrapper.models import Job, Skill, JobSkill, ParsedProfile, ProfilToParse
 from ._tor import request
 
 
-
 class ScrapperHandler(object):
     def __init__(self, service, url):
         scrapper = LinkedInJobSkillScrapper if service == 'linkedin' else ViadeoJobSkillScrapper
 
-        #scrapper.add_profil_to_parse(url, service)
-        
-
         toparse = ProfilToParse.objects.filter(site=service).first() 
 
         if not toparse:
-        	scrapper(url)
+            scrapper(url)
 
         while toparse:
             scrapper(toparse.url)
             toparse.delete()
             toparse = ProfilToParse.objects.filter(site=service).first()
 
-        
-
-
-class Counter(object):
-    counter = 0
-    limit = 400000
-    parsed = []
-
-
+       
 class JobSkillScrapper(object):
     bs = None
     url = None
@@ -43,13 +31,12 @@ class JobSkillScrapper(object):
     def __init__(self, url):
         self.url = self.transform_url(url)
 
-        #if Counter.counter >= Counter.limit:
-            #return None
-
-        #Counter.parsed.append(self.url)
         parsedprofile, created = ParsedProfile.objects.get_or_create(url=self.url)
 
         # Initializing fake browser to bypass LinkedIn security
+        #r = request("http://icanhazip.com/", self.headers)
+        #print(r)
+
         try:
         
            r = request(self.url, self.headers)
@@ -91,8 +78,7 @@ class JobSkillScrapper(object):
 
         # Persist profil with at least one job and four skills
         if self.data['jobs'] and len(self.data['skills']) >= 3:
-            Counter.counter += 1
-
+         
             jobs = []
             for job_name in self.data['jobs']:
                 job, created = Job.objects.get_or_create(name=job_name)

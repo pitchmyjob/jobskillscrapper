@@ -76,8 +76,11 @@ WSGI_APPLICATION = 'wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'HOST': "scrap-jobskill.cw2dxsgsldpl.eu-west-1.rds.amazonaws.com",
+        'NAME': "scrapjobskill",
+        'USER': "scrap",
+        'PASSWORD': "fd1g56fdg8",
     }
 }
 

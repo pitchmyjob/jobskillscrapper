@@ -1,33 +1,11 @@
 '''
 Python script to connect to Tor via Stem and Privoxy, requesting a new connection (hence a new IP as well) as desired.
 '''
-
-import stem
-import stem.connection
-
-import time
 import urllib2
 
 from stem import Signal
 from stem.control import Controller
 
-# initialize some HTTP headers
-# for later usage in URL requests
-user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-#headers={'User-Agent':user_agent}
-
-# initialize some
-# holding variables
-oldIP = "0.0.0.0"
-newIP = "0.0.0.0"
-
-# how many IP addresses
-# through which to iterate?
-nbrOfIpAddresses = 3
-
-# seconds between
-# IP address checks
-secondsBetweenChecks = 2
 
 # request a URL 
 def request(url, headers):
