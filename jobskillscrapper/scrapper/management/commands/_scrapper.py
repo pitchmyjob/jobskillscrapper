@@ -1,15 +1,36 @@
-import requests
+from urlparse import urlparse
 
-from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 
-from scrapper.models import Job, Skill, JobSkill, ParsedProfile
+from scrapper.models import Job, Skill, JobSkill, ParsedProfile, ProfilToParse
+from ._tor import request
+
+
+
+class ScrapperHandler(object):
+    def __init__(self, service, url):
+        scrapper = LinkedInJobSkillScrapper if service == 'linkedin' else ViadeoJobSkillScrapper
+
+        #scrapper.add_profil_to_parse(url, service)
+        
+
+        toparse = ProfilToParse.objects.filter(site=service).first() 
+
+        if not toparse:
+        	scrapper(url)
+
+        while toparse:
+            scrapper(toparse.url)
+            toparse.delete()
+            toparse = ProfilToParse.objects.filter(site=service).first()
+
+        
 
 
 class Counter(object):
     counter = 0
-    limit = 2
+    limit = 400000
     parsed = []
 
 
@@ -17,22 +38,26 @@ class JobSkillScrapper(object):
     bs = None
     url = None
     data = {}
+    next_url = None
 
     def __init__(self, url):
         self.url = self.transform_url(url)
-        if Counter.counter >= Counter.limit:
-            return None
 
-        Counter.parsed.append(url)
+        #if Counter.counter >= Counter.limit:
+            #return None
+
+        #Counter.parsed.append(self.url)
         parsedprofile, created = ParsedProfile.objects.get_or_create(url=self.url)
 
         # Initializing fake browser to bypass LinkedIn security
         try:
-            r = requests.request('GET', self.url, headers=self.headers)
+        
+           r = request(self.url, self.headers)
+
         except Exception:
             pass
         else:
-            self.set_html(r.text)
+            self.set_html(r)
             self.parse(created)
 
     def set_html(self, text):
@@ -53,6 +78,13 @@ class JobSkillScrapper(object):
         else:
             print('> Already parsed')
         self.parse_next_profiles()
+
+
+    def add_profil_to_parse(self, url, service):
+        if not ProfilToParse.objects.filter(url=url).exists() and not ParsedProfile.objects.filter(url=url).exists():
+        	if ProfilToParse.objects.count() < 500000:
+        	    ProfilToParse.objects.create(url=url, site=service)
+
 
     def persist(self):
         """ Save jobs and skills into database """
@@ -122,8 +154,7 @@ class LinkedInJobSkillScrapper(JobSkillScrapper):
         if bs_browse_map:
             for bs_profile_card in bs_browse_map.find_all(class_='profile-card'):
                 url = self.transform_url(bs_profile_card.find('a').get('href'))
-                if url not in Counter.parsed:
-                    LinkedInJobSkillScrapper(url)
+                self.add_profil_to_parse(url, "linkedin")
 
 
 class ViadeoJobSkillScrapper(JobSkillScrapper):
@@ -166,5 +197,5 @@ class ViadeoJobSkillScrapper(JobSkillScrapper):
         if bs_browse_map:
             for bs_profile_card in bs_browse_map.find_all('li', class_='contact'):
                 url = self.transform_url(bs_profile_card.find('a').get('href'))
-                if self.is_valid_url(url) and url not in Counter.parsed:
-                    ViadeoJobSkillScrapper(url)
+                if self.is_valid_url(url):
+                    self.add_profil_to_parse(url, "viadeo")

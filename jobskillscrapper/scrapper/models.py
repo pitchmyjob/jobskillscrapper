@@ -16,3 +16,8 @@ class JobSkill(models.Model):
 
 class ParsedProfile(models.Model):
     url = models.URLField(max_length=250)
+
+
+class ProfilToParse(models.Model):
+    url = models.URLField(max_length=250)
+    site = models.CharField(max_length=250, null=True)
