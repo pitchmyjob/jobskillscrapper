@@ -18,6 +18,6 @@ class Command(BaseCommand):
         JobSkill.objects.all().delete()
         ParsedProfile.objects.all().delete()
         ProfilToParse.objects.all().delete()
-        ProfilJob.objects.all().delete()
+        ProfilJoby.objects.all().delete()
 
         self.stdout.write('\n# All record deleted')
