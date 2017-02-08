@@ -14,6 +14,7 @@ tor --hash-password mypassword
 ```
 
 So, update the torrc with the port and the hashed password.
+
 /etc/tor/torrc
 ```
 ControlPort 9051
