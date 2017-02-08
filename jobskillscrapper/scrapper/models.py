@@ -18,6 +18,11 @@ class ParsedProfile(models.Model):
     url = models.URLField(max_length=250)
 
 
+class ProfilJob(models.Model):
+	profil = models.ForeignKey(ParsedProfile)
+	job = models.ForeignKey(Job)
+
+
 class ProfilToParse(models.Model):
     url = models.URLField(max_length=250)
     site = models.CharField(max_length=250, null=True)
