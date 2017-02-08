@@ -1,8 +1,6 @@
-import sys
-
 from django.core.management.base import BaseCommand
 
-from ._scrapper import LinkedInJobSkillScrapper, ViadeoJobSkillScrapper, ScrapperHandler
+from ._scrapper import ScrapperHandler
 
 
 class Command(BaseCommand):

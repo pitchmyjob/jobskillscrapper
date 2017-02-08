@@ -1,6 +1,5 @@
 from urlparse import urlparse
 
-
 from bs4 import BeautifulSoup
 
 from scrapper.models import Job, Skill, JobSkill, ParsedProfile, ProfilToParse
@@ -11,7 +10,7 @@ class ScrapperHandler(object):
     def __init__(self, service, url):
         scrapper = LinkedInJobSkillScrapper if service == 'linkedin' else ViadeoJobSkillScrapper
 
-        toparse = ProfilToParse.objects.filter(site=service).first() 
+        toparse = ProfilToParse.objects.filter(site=service).first()
 
         if not toparse:
             scrapper(url)
@@ -21,7 +20,7 @@ class ScrapperHandler(object):
             toparse.delete()
             toparse = ProfilToParse.objects.filter(site=service).first()
 
-       
+
 class JobSkillScrapper(object):
     bs = None
     url = None
@@ -34,12 +33,8 @@ class JobSkillScrapper(object):
         parsedprofile, created = ParsedProfile.objects.get_or_create(url=self.url)
 
         # Initializing fake browser to bypass LinkedIn security
-        #r = request("http://icanhazip.com/", self.headers)
-        #print(r)
-
         try:
-        
-           r = request(self.url, self.headers)
+            r = request(self.url, self.headers)
 
         except Exception:
             pass
@@ -66,19 +61,17 @@ class JobSkillScrapper(object):
             print('> Already parsed')
         self.parse_next_profiles()
 
-
     def add_profil_to_parse(self, url, service):
         if not ProfilToParse.objects.filter(url=url).exists() and not ParsedProfile.objects.filter(url=url).exists():
-        	if ProfilToParse.objects.count() < 500000:
-        	    ProfilToParse.objects.create(url=url, site=service)
-
+            if ProfilToParse.objects.count() < 500000:
+                ProfilToParse.objects.create(url=url, site=service)
 
     def persist(self):
         """ Save jobs and skills into database """
 
         # Persist profil with at least one job and four skills
         if self.data['jobs'] and len(self.data['skills']) >= 3:
-         
+
             jobs = []
             for job_name in self.data['jobs']:
                 job, created = Job.objects.get_or_create(name=job_name)
