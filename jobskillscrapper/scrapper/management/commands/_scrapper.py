@@ -9,16 +9,18 @@ from scrapper.models import Job, Skill, JobSkill, ParsedProfile
 
 class Counter(object):
     counter = 0
-    limit = 2
+    limit = 20
     parsed = []
 
 
 class JobSkillScrapper(object):
     bs = None
     url = None
-    data = {}
 
     def __init__(self, url):
+        self.data = {}
+        self.next_urls = []
+
         self.url = self.transform_url(url)
         if Counter.counter >= Counter.limit:
             return None
@@ -167,4 +169,17 @@ class ViadeoJobSkillScrapper(JobSkillScrapper):
             for bs_profile_card in bs_browse_map.find_all('li', class_='contact'):
                 url = self.transform_url(bs_profile_card.find('a').get('href'))
                 if self.is_valid_url(url) and url not in Counter.parsed:
-                    ViadeoJobSkillScrapper(url)
+                    self.next_urls.append(url)
+
+
+class ScrapperHandler(object):
+    def __init__(self, service, urls):
+        scrapper = LinkedInJobSkillScrapper if service == 'linkedin' else ViadeoJobSkillScrapper
+
+        next_urls = []
+        for url in urls:
+            obj = scrapper(url)
+            next_urls += obj.next_urls
+
+        if next_urls:
+            ScrapperHandler(service, next_urls)
