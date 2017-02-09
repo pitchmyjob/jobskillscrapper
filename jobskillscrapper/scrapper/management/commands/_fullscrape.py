@@ -6,6 +6,7 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection
 from scrapper.models import Job, Skill, JobSkill, ParsedProfile, ProfilToParse, ProfilJob
 from ._tor import tor_request
 import boto3
+import time
 
 
 class ScrapperHandler(object):
@@ -22,12 +23,17 @@ class ScrapperHandler(object):
         queue = sqs.get_queue_by_name(QueueName='sqs-scraper')
 
         while self.get_number_message() > 1 :
-            for message in queue.receive_messages(MaxNumberOfMessages=10): 
-                sc = scrapper(message.body)
-                if sc.save:
-                    self.save_es(sc.data, sc.profil.id)
+            for message in queue.receive_messages(MaxNumberOfMessages=10):
 
-                message.delete()
+                try: 
+                    sc = scrapper(message.body)
+                    if sc.save:
+                        self.save_es(sc.data, sc.profil.id)
+
+                    message.delete()
+                except:
+                    time.sleep(10)
+                    ScrapperHandler(service=service, url=url)
 
         
     
