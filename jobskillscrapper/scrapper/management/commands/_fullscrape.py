@@ -5,6 +5,7 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection
 
 from scrapper.models import Job, Skill, JobSkill, ParsedProfile, ProfilToParse, ProfilJob
 from ._tor import tor_request
+import boto3
 
 
 class ScrapperHandler(object):
@@ -14,23 +15,39 @@ class ScrapperHandler(object):
     def __init__(self, service, url):
         scrapper = LinkedInJobSkillScrapper if service == 'linkedin' else ViadeoJobSkillScrapper
 
-        toparse = ProfilToParse.objects.filter(site=service).first()
-
+        #toparse = ProfilToParse.objects.filter(site=service).first()
         self.config_es()
+
+        sqs = boto3.resource('sqs')
+        queue = sqs.get_queue_by_name(QueueName='sqs-scraper')
+
+        while self.get_number_message() > 1 :
+            for message in queue.receive_messages(MaxNumberOfMessages=10): 
+                sc = scrapper(message.body)
+                if sc.save:
+                    self.save_es(sc.data, sc.profil.id)
+
+                message.delete()
+
+        
     
-        if not toparse:
-            sc = scrapper(url)
-            if sc.save:
-                self.save_es(sc.data, sc.profil.id)
-            toparse = ProfilToParse.objects.filter(site=service).first()
+        #if not toparse:
+        #    sc = scrapper(url)
+        #    if sc.save:
+                #self.save_es(sc.data, sc.profil.id)
+            #toparse = ProfilToParse.objects.filter(site=service).first()
 
-        while toparse:
-            sc = scrapper(toparse.url)
-            if sc.save:
-                self.save_es(sc.data, sc.profil.id)
-            toparse.delete()
-            toparse = ProfilToParse.objects.filter(site=service).first()
+        #while toparse:
+            #sc = scrapper(toparse.url)
+            #if sc.save:
+                #self.save_es(sc.data, sc.profil.id)
+            #toparse.delete()
+            #toparse = ProfilToParse.objects.filter(site=service).first()
 
+    def get_number_message(self):
+        client = boto3.client('sqs')
+        res = client.get_queue_attributes(QueueUrl='https://sqs.eu-west-1.amazonaws.com/074761588836/sqs-scraper', AttributeNames=['ApproximateNumberOfMessages'])
+        return res['Attributes']['ApproximateNumberOfMessages']
 
     def config_es(self):
         self.es = Elasticsearch(
@@ -53,6 +70,7 @@ class JobSkillScrapper(object):
     next_url = None
     profil = None
     save=False
+    client_sqs = None
 
     def __init__(self, url):
         self.url = self.transform_url(url)
@@ -60,6 +78,7 @@ class JobSkillScrapper(object):
         parsedprofile, created = ParsedProfile.objects.get_or_create(url=self.url)
         self.profil = parsedprofile
 
+        self.client_sqs =  boto3.client('sqs')
         # Initializing fake browser to bypass LinkedIn security
         re = tor_request()
         r = re.get(self.url)
@@ -94,6 +113,7 @@ class JobSkillScrapper(object):
         if not ProfilToParse.objects.filter(url=url).exists() and not ParsedProfile.objects.filter(url=url).exists():
             if ProfilToParse.objects.count() < 1000000:
                 ProfilToParse.objects.create(url=url, site=service)
+                self.client_sqs.send_message(QueueUrl="https://sqs.eu-west-1.amazonaws.com/074761588836/sqs-scraper", MessageBody=url)
 
     def persist(self):
         """ Save jobs and skills into database """
