@@ -1,5 +1,14 @@
 # Job & Skill scrapper
 
+## Installation all package
+```
+sudo apt-get update 
+sudo apt-get install libpq-dev python-dev python2
+sudo apt-get install build-essential 
+sudo apt-get install virtualenv
+```
+
+
 ## Installation & configuration Tor / proxy / stem
 
 ### installation tor
