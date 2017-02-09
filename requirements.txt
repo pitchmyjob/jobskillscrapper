@@ -5,3 +5,4 @@ psycopg2==2.6.2
 boto3
 elasticsearch
 awscli
+requests
