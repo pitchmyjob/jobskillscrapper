@@ -3,7 +3,7 @@
 ## Installation all package
 ```
 sudo apt-get update 
-sudo apt-get install libpq-dev python-dev python2
+sudo apt-get install libpq-dev python-dev python
 sudo apt-get install build-essential 
 sudo apt-get install virtualenv
 ```
