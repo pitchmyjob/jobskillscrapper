@@ -118,8 +118,11 @@ class JobSkillScrapper(object):
     def add_profil_to_parse(self, url, service):
         if not ProfilToParse.objects.filter(url=url).exists() and not ParsedProfile.objects.filter(url=url).exists():
             if ProfilToParse.objects.count() < 1000000:
-                ProfilToParse.objects.create(url=url, site=service)
-                self.client_sqs.send_message(QueueUrl="https://sqs.eu-west-1.amazonaws.com/074761588836/sqs-scraper", MessageBody=url)
+                try : 
+                    ProfilToParse.objects.create(url=url, site=service)
+                    self.client_sqs.send_message(QueueUrl="https://sqs.eu-west-1.amazonaws.com/074761588836/sqs-scraper", MessageBody=url)
+                except:
+                    print("> Duplicate stopped")
 
     def persist(self):
         """ Save jobs and skills into database """
