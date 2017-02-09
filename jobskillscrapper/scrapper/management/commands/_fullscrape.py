@@ -25,15 +25,15 @@ class ScrapperHandler(object):
         while self.get_number_message() > 1 :
             for message in queue.receive_messages(MaxNumberOfMessages=10):
 
-                try: 
-                    sc = scrapper(message.body)
-                    if sc.save:
-                        self.save_es(sc.data, sc.profil.id)
+                #try: 
+                sc = scrapper(message.body)
+                if sc.save:
+                    self.save_es(sc.data, sc.profil.id)
 
-                    message.delete()
-                except:
-                    time.sleep(10)
-                    ScrapperHandler(service=service, url=url)
+                message.delete()
+                #except:
+                    #time.sleep(10)
+                    #ScrapperHandler(service=service, url=url)
 
         
     
@@ -77,8 +77,10 @@ class JobSkillScrapper(object):
     profil = None
     save=False
     client_sqs = None
+    start_time = 0
 
     def __init__(self, url):
+        
         self.url = self.transform_url(url)
         self.save=False
         parsedprofile, created = ParsedProfile.objects.get_or_create(url=self.url)
@@ -86,8 +88,10 @@ class JobSkillScrapper(object):
 
         self.client_sqs =  boto3.client('sqs')
         # Initializing fake browser to bypass LinkedIn security
+        
         re = tor_request()
         r = re.get(self.url)
+
 
         self.set_html(r)
         self.parse(created)
@@ -111,18 +115,20 @@ class JobSkillScrapper(object):
             self.parse_skills()
             self.persist()
         else:
-            print('> Already parsed')
+            print('> Already parsed  --- {}')
 
         self.parse_next_profiles()
 
+
     def add_profil_to_parse(self, url, service):
-        if not ProfilToParse.objects.filter(url=url).exists() and not ParsedProfile.objects.filter(url=url).exists():
-            if ProfilToParse.objects.count() < 1000000:
-                try : 
-                    ProfilToParse.objects.create(url=url, site=service)
-                    self.client_sqs.send_message(QueueUrl="https://sqs.eu-west-1.amazonaws.com/074761588836/sqs-scraper", MessageBody=url)
-                except:
-                    print("> Duplicate stopped")
+        #if not ProfilToParse.objects.filter(url=url).exists() and not ParsedProfile.objects.filter(url=url).exists():
+            #if ProfilToParse.objects.count() < 1000000:
+        try : 
+            ProfilToParse.objects.create(url=url, site=service)
+            self.client_sqs.send_message(QueueUrl="https://sqs.eu-west-1.amazonaws.com/074761588836/sqs-scraper", MessageBody=url)
+        except:
+            pass
+            #print("> Duplicate stopped")
 
     def persist(self):
         """ Save jobs and skills into database """
