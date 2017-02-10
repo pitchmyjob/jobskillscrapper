@@ -117,7 +117,7 @@ class JobSkillScrapper(object):
         else:
             print('> Already parsed  --- {}')
 
-        #self.parse_next_profiles()
+        self.parse_next_profiles()
 
 
     def add_profil_to_parse(self, url, service):
